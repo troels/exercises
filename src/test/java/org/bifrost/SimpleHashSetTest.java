@@ -10,8 +10,7 @@ import java.util.NoSuchElementException;
 
 public class SimpleHashSetTest extends TestCase 
 { 
-    public SimpleHashSetTest()
-    {
+    public SimpleHashSetTest() {
         super("SimpleHashSetTest");
     }
 
@@ -20,7 +19,6 @@ public class SimpleHashSetTest extends TestCase
     }
 
 
-    // Test that add corresponds to protocol for java.util.HashSet
     public void testAdd() { 
 	SimpleHashSet<Integer> hashSet = new SimpleHashSet<Integer>();
 	assert(hashSet.add(1));
@@ -28,7 +26,8 @@ public class SimpleHashSetTest extends TestCase
 	assert(!hashSet.add(2));
     }
 
-
+    
+    // A class used in testAddPreserves
     static final class TestObject { 
 	private final String name;
 	
