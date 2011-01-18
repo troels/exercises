@@ -7,6 +7,7 @@ import junit.framework.TestSuite;
 import org.bifrost.triangledetector.TriangleDetector;
 import java.util.Collection;
 import java.util.Iterator;;
+import java.util.List;;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -14,11 +15,11 @@ class PermutationGenerator {
     /**
      * A simple nonefficient permutation-generator. 
      * 
-     * @param in A LinkedList of values to be permuted
+     * @param in A List of values to be permuted
      * 
      * @return A complete linkedList of linkedlists, each containing a unique permutation of the input list
      */
-    static <T> LinkedList<LinkedList<T>> permute(LinkedList<T> in) {
+    static <T> LinkedList<LinkedList<T>> permute(List<T> in) {
 	if (in.isEmpty()) { 
 	    LinkedList<LinkedList<T>> ret = new LinkedList<LinkedList<T>>();
 	    ret.add(new LinkedList<T>());
@@ -46,8 +47,7 @@ class PermutationGenerator {
 
 public class TriangleDetectorTest extends TestCase 
 { 
-    public TriangleDetectorTest()
-    {
+    public TriangleDetectorTest() {
         super("TriangleDetectorTest");
     }
 
