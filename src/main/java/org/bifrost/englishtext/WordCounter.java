@@ -21,10 +21,17 @@ class WordCounter {
     
     private final Pattern wordRegex;
     
+    /** 
+     * Default constructor. Creates a wordCounter using the DEFAULT_WORD_REGEX
+     */
     public WordCounter() { 
 	this(DEFAULT_WORD_REGEX);
     }
     
+    /**
+     * Constructor taking a custom regex, that will be used for finding words.
+     * The regex must never match the empty string, as that can create an infinite loop.
+     */
     public WordCounter(Pattern wordRegex ) { 
 	this.wordRegex = wordregex;
     }
@@ -44,11 +51,11 @@ class WordCounter {
 
 	// Numbers are not scientifically determined. 
 	final int AVG_WORD_SIZE = 5; final int AVG_NUMBER_OF_TIMES_PER_WORD = 2; final int FUZZ_FACTOR = 2;
-
 	final int hash_table_size = FUZZ_FACTOR * text.length / (AVG_WORD_SIZE * AVG_NUMBER_OF_TIMES_PER_WORD);
-
+	
 	HashMap<String, Integer> map = new HashMap<String, Integer>(hash_table_size);
 
+	// Find all words and put them in hashmap
 	while(m.find()) {
 	    String match = m.group().toLowerCase();
 	    Integer oldval = map.get(match);
@@ -59,11 +66,13 @@ class WordCounter {
 	    }
 	}
 	
+	// Convert words to Wordclass and put them in a list.
 	ArrayList<Word> res = new ArrayList<Word>(map.size());
 	for(Map.Entry<String, Int> entry: map.entrySet()) {
 	    res.add(new Word(entry.getKey(), entry.getValue()));
 	}
 
+	// Sort the list
 	Collections.sort(res, new Comparator() { 
 		@Override
 		public int compare(Object o1, Object o2) { 
@@ -76,6 +85,9 @@ class WordCounter {
 	return res;
     }
     
+    /**
+     * Class for keeping track of words found 
+     */
     public static final class Word {
 	private final String name;
 	private int occurence;
@@ -103,15 +115,65 @@ class WordCounter {
 	    return 37 * getName().hashCode;
 	}
     }
-	
+
+    /**
+     * Returns the nrWords most common words found in text 
+     *
+     * @param text, The text to search after words.
+     * @param nrWords, max number of words to be found, if zero or negative return all words, 
+     * no matter how many they are.
+     *
+     * @return List of words found in order of most common first. 
+     * If there is less than nrWords distinct words or nrWords is zero or negative,
+     * all words found will be returned.
+     */
     public List<Word> getMostCommonWords(String text, int nrWords) {
 	ArrayList<Word> lst = createWordList(text);
 	
-	if(nrWords <= 0) return lst;
-	return lst.
-	
-	
-	
-	
-	
+	if(nrWords <= 0 || nrWords >= lst.size()) return lst;
+	return lst.subList(0, nrWords);
+    }
+
+    /**
+     * Return the 10 most common words found in text.
+     * 
+     * @param text text to search
+     * 
+     * @return 10 most common words (or all words if fewer than ten distinct words)
+     *
+     */
+    public List<Word> getMostCommonWords(String text) { 
+	return getMostCommonWords(text, 10);
+    }
+
+    /**
+     * Reads file f using encoding encoding and finds the nrWords most common words,
+     * under the constraints mentioned in getMostCommonWords(String text, int nrWords);
+     * 
+     * @param f file to search
+     * @param encoding encoding file is presumed to be in
+     * @param nrWords The max number of words to return
+     *
+     * @return the result of getMostCommonWords on the text of file
+     */
+    public List<Word> getMostCommonWordsFromFile(File f, String encoding, int nrWords) { 
+	String text = FileUtils.readFileToString(f, encoding);
+	return getMostCommonWords(text, nrWords);
+    }
+
+    /**
+     * Reads file f using encoding encoding and finds the nrWords most common words,
+     * under the constraints mentioned in getMostCommonWords(String text, int nrWords);
+     * 
+     * @param f file to search
+     * @param encoding encoding file is presumed to be in
+     * @param nrWords The max number of words to return
+     *
+     * @return the result of getMostCommonWords on the text of file
+     */
+    public List<Word> getMostCommonWordsFromFile(File f, String encoding) {
+	String text = FileUtils.readFileToString(f, encoding);
+	return getMostCommonWords(text);
+    }
+};
 	
