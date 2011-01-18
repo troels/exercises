@@ -150,13 +150,26 @@ public class WordCounterTest extends TestCase {
 	}
     }
 
-    public void testFiles() throws IOException {
-	Enumeration elems = getClass().getClassLoader().getResources("wordcounttest/test");
+    /**
+     * Read Lincoln's Gettysburg address and count the words.
+     */
+    public void testFile() throws IOException {
 	WordCounter wc = new WordCounter();
-	while(elems.hasMoreElements()) {
-	    URL u = (URL) elems.nextElement();
-	    File f = new File(u.getFile());
-	    System.out.println(wc.getMostCommonWordsFromFile(f, "UTF-8"));
-	}
+	File f = new File(((URL)getClass().getClassLoader().getResource("wordcounttest/gettysburg.txt")).getFile());
+	List<WordCounter.Word> referenceWords = new ArrayList<WordCounter.Word>(10);
+	referenceWords.add(new WordCounter.Word("that", 13));
+	referenceWords.add(new WordCounter.Word("the", 11));
+	referenceWords.add(new WordCounter.Word("we", 10));
+	referenceWords.add(new WordCounter.Word("here", 8));
+	referenceWords.add(new WordCounter.Word("to", 8));
+	referenceWords.add(new WordCounter.Word("a", 7));
+	referenceWords.add(new WordCounter.Word("and", 6));
+	referenceWords.add(new WordCounter.Word("nation", 6));
+	referenceWords.add(new WordCounter.Word("can", 5));
+	referenceWords.add(new WordCounter.Word("for", 5));
+
+	List<WordCounter.Word> gettysburgWords = wc.getMostCommonWordsFromFile(f, "UTF-8");
+	assertEquals(gettysburgWords.size(), 10);
+	assertEquals(referenceWords, gettysburgWords);
     }
 };
