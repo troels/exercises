@@ -7,9 +7,29 @@ import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Collection;
 import java.util.Stack;
 
-class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
+/**
+ * A trie or a prefix tree is a map-datastructure that is very well-suited for mapping
+ * long, similar strings written in a small alphabet to values of any kind.
+ * 
+ * It's worst-case characteristics is in many respects better than
+ * hash tables and binary trees.  Average performance compared to
+ * binary trees and hash tables in common scenarios, are not too
+ * exciting though.
+ * 
+ * @url http://en.wikipedia.org/wiki/Trie
+ */
+public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
+    /** 
+     * Our basic datastructure is a tree, consisting of Nodes and Edges. 
+     * Each Edge has a label, and a node it points to. 
+     * 
+     * When searching for the existence of a key, we will recursively walk down the edges, 
+     * comparing an edge to the first character of the key, to see if we have a match.
+     * This will generally work when characters are surrogate pairs too.
+     */
     class Edge { 
 	final char label;
 	final Node to;
@@ -22,18 +42,28 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	public Node getTo() { return to; }
 	public char getLabel() { return label; }
     }
-
+    
+    /**
+     * A node has a couple of children, a parent (only used currently for speeding up deletion, somewhat)
+     * and occasionally some value (the payload)
+     */ 
     class Node {
+	final Node parent;
 	final LinkedList<Edge> children; 
 	boolean hasPayload;
 	TrieEntry payload; 
 	
-	public Node(TrieEntry payload) {
-	    this();
+	public Node(Node parent, TrieEntry payload) {
+	    this(parent);
 	    setPayload(payload);
 	}
 
-	public Node() { 
+	public boolean hasParent() {
+	    return parent != null;
+	}
+
+	public Node(Node parent) { 
+	    this.parent = parent;
 	    hasPayload = false;
 	    children = new LinkedList<Edge>();
 	}
@@ -43,21 +73,34 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    this.payload = payload;
 	}
 
+	public void deletePayload() { 
+	    hasPayload = false;
+	    this.payload = null;
+	}
+
 	public void addChild(Edge child) { 
 	    children.add(child);
 	}
 	
+	public Node getParent() { return parent; }
 	public List<Edge> getChildren() { return children; }
 	public TrieEntry getPayload() { return payload; }
 	public boolean hasPayload() { return hasPayload; }
     }
 
     Node root;
+    /**
+     * nrElements keeps track of the number of elements we have added and not removed (or overwritten).
+     * it is redundant, but will speed up common operations like size() and isEmpty() tremendously.
+     */
     int nrElements = 0;
 
+    /**
+     * TrieEntry necessary for entrySet()
+     */
     class TrieEntry implements Map.Entry<K, V> {
 	final K k;
-	final V v;
+	V v;
 	
 	public TrieEntry(K k, V v) { 
 	    this.k = k;
@@ -76,27 +119,31 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	
 	@Override 
 	public V getValue() { return v; }
-
+	
 	@Override 
 	public int hashCode() { 
 	    return (getKey() == null ? 0 : getKey().hashCode()) ^ 
 		   (getValue() == null ? 0 : getValue().hashCode());
 	}
-
+	
+	
 	@Override 
 	public V setValue(V v) {
-	    return Trie.this.put(k, v);
+	    V ret =  Trie.this.put(k, v);
+	    this.v = v;
+	    return ret;
 	}
     }
 
     public Trie() {
-	root = new Node();
+	nrElements = 0;
+	root = new Node(null);
     }
 
     @Override
     public void clear() { 
 	nrElements = 0;
-	root = new Node();
+	root = new Node(null);
     }
 
     @Override
@@ -104,6 +151,7 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	Node node = root;
 	CharSequence key = (CharSequence) k;
 	outer: for (int i = 0; i < key.length(); ++i ) {
+	    // Traverse until we have knocked of as much prefix as exists from the root of k.
 	    char c = key.charAt(i);
 	    for(Edge child: node.getChildren()) {
 		if (child.getLabel() == c) {
@@ -112,30 +160,43 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		}
 	    } 
 	    
+	    // Key is novel, all prefix of k we could eat has been eaten.
 	    for (;i < key.length(); ++i) {
-		Node newNode = new Node();
+		Node newNode = new Node(node);
 		Edge e = new Edge(key.charAt(i), newNode);
 		node.addChild(e);
 		node = newNode;
 	    }
 	}
 	
+	//Finally add payload
 	TrieEntry oldPayload = null;
 	if (node.hasPayload()) { 
 	    oldPayload = node.getPayload();
 	} else {
-	    nrElements += 1;
+	    nrElements++;
 	}
 	node.setPayload(new TrieEntry (k, value));
 	return oldPayload == null ? null : oldPayload.getValue();
     }
 
+    /**
+     * TrieSet for entrySet()
+     */
     class TrieSet extends AbstractSet<Map.Entry<K, V>> {
 	@Override 
 	public int size() {
 	    return nrElements;
 	}
 
+	/**
+	 * TrieSetIterator is a bit tricky as we would have to use the call stack for returning
+	 * to the one calling next(). 
+	 * We remember the position we were on in the tree by a stack and a couple of iterators.
+	 *
+	 * remove is also tricky as the active iterators may give undefined behaviour if we modify a collection 
+	 * by any other means than the very same iterator. We therefore don't implement remove currently.
+	 */
 	class TrieSetIterator implements Iterator<Map.Entry<K, V>> {
 	    class NodeIteration {
 		public final Node node;
@@ -152,7 +213,9 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    {
 		stack = new Stack<NodeIteration>();
 		stack.push(new NodeIteration(root));
-		gotoNext();
+		if (!root.hasPayload()) {
+		    gotoNext();
+		}
 	    }
 		
 	    private void gotoNext() { 
@@ -160,7 +223,7 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		    NodeIteration cur = stack.peek();
 		    while(cur.children.hasNext()) {
 			Node next = cur.children.next().getTo();
-			stack.push(new NodeIteration(next));
+			stack.push((cur = new NodeIteration(next)));
 			if (next.hasPayload()) return;
 		    }
 		    stack.pop();
@@ -196,6 +259,39 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	return new TrieSet();
     }
 
+    private void getRidOfNode(Node n) {
+	assert n.hasPayload();
+	n.deletePayload();
+	pruneUpwards(n);
+	nrElements--;
+    }
+	
+    @Override 
+    public V remove(Object key) { 
+	CharSequence cs = (CharSequence) key;
+	Node n = findNode(cs);
+	if (n == null || !n.hasPayload()) return null;
+	TrieEntry te = n.getPayload();
+	
+	getRidOfNode(n);
+	return te.getValue();
+    }
+
+    private void pruneUpwards(Node n) { 
+	while (n.getChildren().isEmpty() && !n.hasPayload() && n.hasParent()) {
+	    Node parent = n.getParent();
+	    int i = 0;
+	    Collection<Edge> children = parent.getChildren();
+	    for(Edge e: children) {
+		if (e.getTo() == n) break;
+		++i;
+	    }
+	    assert i < children.size();
+	    children.remove(i);
+	    n = parent;
+	}
+    }
+    
     @Override
     public boolean containsKey(Object key) { 
 	CharSequence cs = (CharSequence) key;
@@ -206,6 +302,15 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     @Override
     public boolean containsValue(Object value) { 
 	return containsValue(value, root);
+    }
+
+    @Override
+    public V get(Object k) {
+	CharSequence cs = (CharSequence)k;
+	
+	Node n = findNode(cs);
+
+	return n != null && n.hasPayload() ? n.getPayload().getValue() : null;
     }
 
     private Node findNode(CharSequence s) { 
@@ -224,10 +329,9 @@ class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     }
 
     private boolean containsValue(Object value, Node n) {
+	if (n.hasPayload() && n.getPayload().getValue().equals(value)) return true; 
 	for (Edge e: n.getChildren()) {
-	    Node to = e.getTo();
-	    if(to.hasPayload() && to.getPayload().equals(value)) return true;
-	    if (containsValue(value, to)) return true;
+	    if (containsValue(value, e.getTo())) return true;
 	}
 	return false;
     }
