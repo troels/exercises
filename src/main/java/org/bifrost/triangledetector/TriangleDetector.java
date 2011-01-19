@@ -9,9 +9,12 @@ public final class TriangleDetector {
     
 	
     /** 
-     * Returns SCALENE (1), ISOSCELES (2), EQUILATERAL (3)  or ERROR (4), depending on whether
-     * the arguments corresponds to such a triangle. Error if one or more arguments are less than 
-     * or equal to zero.
+     * Returns SCALENE (1), ISOSCELES (2), EQUILATERAL (3) or ERROR
+     * (4), depending on whether the arguments corresponds to such a
+     * triangle. Error if one or more arguments are less than or equal
+     * to zero, or if the sides can not be made into a triangle (if
+     * the sum of two of the sides, are less than the sum of the third.)
+
      * 
      * @param a The first side
      * @param b The second side
@@ -21,7 +24,7 @@ public final class TriangleDetector {
      * 
      */
     public static int detectTriangle(int a, int b, int c) {
-	if (a <= 0 || b <= 0 || c <= 0) return ERROR;
+	if (a <= 0 || b <= 0 || c <= 0 || a + b < c || a + c < b || b + c < a) return ERROR;
 	
 	if (a == b && b == c) {
 	    return EQUILATERAL;
