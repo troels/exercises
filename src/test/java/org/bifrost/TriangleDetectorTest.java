@@ -84,5 +84,6 @@ public class TriangleDetectorTest extends TestCase
 	testPermutations(2, 3, 4, TriangleDetector.SCALENE);
 	testPermutations(4, 4, 4, TriangleDetector.EQUILATERAL);
 	testPermutations(1, 2, 4, TriangleDetector.ERROR);
+	testPermutations(25, 35, 60, TriangleDetector.ERROR);
     }
 }
