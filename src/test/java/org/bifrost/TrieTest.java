@@ -215,6 +215,31 @@ public class TrieTest extends TestCase
     }
 
     public void testTrieEntrySet2() { 
+	Trie<String, String> trie1 = new Trie<String, String>();
+	trie1.put("One for me", "one for you");
+	trie1.put("I am here", "you are me");
+
+	Trie<String, String> trie2 = new Trie<String, String>();
+	trie2.put("One for me", "one for you");
+	trie2.put("I am here", "you are me");
+
+	Set<Map.Entry<String, String>> s1 = trie1.entrySet();
+	Set<Map.Entry<String, String>> s2 = trie2.entrySet();
+	assertEquals(s1, s2);
+	
+	assert(s1.containsAll(s2));
+	assert(s2.containsAll(s1));
+	
+	assert(s1.hashCode() == s2.hashCode());
+	Map.Entry<String, String> entry = s1.iterator().next();
+	String oldValue = entry.getValue();
+	
+	entry.setValue("Something different");
+	assert(!s1.equals(s2));
+	assert(!trie1.equals(trie2));
+	entry.setValue(oldValue);
+	assert(s1.equals(s2));
+	assert(trie1.equals(trie2));
 	
     }
 	    
