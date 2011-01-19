@@ -27,8 +27,11 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
      * Each Edge has a label, and a node it points to. 
      * 
      * When searching for the existence of a key, we will recursively walk down the edges, 
-     * comparing an edge to the first character of the key, to see if we have a match.
-     * This will generally work when characters are surrogate pairs too.
+     * comparing an edge to the first character of the key, go to the node at the end of the edge, and
+     * follow edges from there with the second character etc.
+     *
+     * This will work when characters are surrogate pairs too. Though we have no guarantee that someone has 
+     * not put an illegal surrogate pair in the tree.
      */
     class Edge { 
 	final char label;
@@ -44,7 +47,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     }
     
     /**
-     * A node has a couple of children, a parent (only used currently for speeding up deletion, somewhat)
+     * A node has a couple of children, a parent (only used for speeding up deletion somewhat)
      * and occasionally some value (the payload)
      */ 
     class Node {
@@ -98,7 +101,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     /**
      * TrieEntry necessary for entrySet()
      */
-    class TrieEntry implements Map.Entry<K, V> {
+    public class TrieEntry implements Map.Entry<K, V> {
 	final K k;
 	V v;
 	
@@ -107,6 +110,10 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    this.v = v;
 	}
 
+	/*
+	 * Because of erasure this method is shaky, as we don't have any guarantees what kind of 
+	 * Map.Entry o is.  It may throw exceptions or it may not think itself equals to us (dropping symmetry)
+	 */
 	@Override
 	public boolean equals(Object o) {
 	    if (!(o instanceof Map.Entry)) return false;
@@ -120,6 +127,9 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	@Override 
 	public V getValue() { return v; }
 	
+	/*
+	 * This is from java documentation and is used by Trie.hashCode to calculate the total hashCode of the trie.
+	 */
 	@Override 
 	public int hashCode() { 
 	    return (getKey() == null ? 0 : getKey().hashCode()) ^ 
@@ -127,6 +137,10 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	}
 	
 	
+	/**
+	 * We have a gurantee that the mapping still exists in the map, so this is basically just a payload exchange.
+	 * if the mapping does not exist we are undefined (but will generally pull out allright anyway).
+	 */
 	@Override 
 	public V setValue(V v) {
 	    V ret =  Trie.this.put(k, v);
@@ -151,7 +165,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	Node node = root;
 	CharSequence key = (CharSequence) k;
 	outer: for (int i = 0; i < key.length(); ++i ) {
-	    // Traverse until we have knocked of as much prefix as exists from the root of k.
+	    // Traverse until we have knocked of as much prefix as exists in the trie from k.
 	    char c = key.charAt(i);
 	    for(Edge child: node.getChildren()) {
 		if (child.getLabel() == c) {
@@ -208,11 +222,13 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		}
 	    }
 		
-	    private Node savedNode = null;
 	    private Stack<NodeIteration> stack;
 	    {
 		stack = new Stack<NodeIteration>();
 		stack.push(new NodeIteration(root));
+		/**
+		 * Edge case: when root has payload, don't go searching anymore.
+		 */
 		if (!root.hasPayload()) {
 		    gotoNext();
 		}
@@ -231,13 +247,13 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    }
 	    
 	    @Override
-	    public boolean hasNext() { 
+	    public boolean hasNext() {
 		return !stack.isEmpty();
 	    }
 
 	    @Override 
 	    public Map.Entry<K, V> next() {
-		Node cur = savedNode = stack.peek().node;
+		Node cur = stack.peek().node;
 		Map.Entry<K, V> payload = cur.getPayload();
 		gotoNext();
 		return payload;
@@ -258,6 +274,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     public Set<Map.Entry<K, V>> entrySet() {
 	return new TrieSet();
     }
+
 
     private void getRidOfNode(Node n) {
 	assert n.hasPayload();
