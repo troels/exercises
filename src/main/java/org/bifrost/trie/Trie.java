@@ -23,15 +23,17 @@ import java.util.Stack;
  */
 public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     /** 
-     * Our basic datastructure is a tree, consisting of Nodes and Edges. 
-     * Each Edge has a label, and a node it points to. 
+     * Our basic datastructure is a tree, consisting of Nodes and
+     * Edges.  Each Edge has a label, and points to a node.
      * 
-     * When searching for the existence of a key, we will recursively walk down the edges, 
-     * comparing an edge to the first character of the key, go to the node at the end of the edge, and
-     * follow edges from there with the second character etc.
+     * When searching for the existence of a key, we will recursively
+     * walk down the edges, comparing an edge to the first character
+     * of the key, go to the node at the end of the edge, and follow
+     * edges from there with the second character etc.
      *
-     * This will work when characters are surrogate pairs too. Though we have no guarantee that someone has 
-     * not put an illegal surrogate pair in the tree.
+     * This will work when characters are partof utf16 surrogate pairs
+     * too.  Though we have no guarantee that someone has not put an
+     * illegal surrogate pair in the tree.
      */
     class Edge { 
 	final char label;
@@ -47,7 +49,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     }
     
     /**
-     * A node has a couple of children, a parent (only used for speeding up deletion somewhat)
+     * A node has zero or more children, a parent (only used for speeding up deletion somewhat)
      * and occasionally some value (the payload)
      */ 
     class Node {
@@ -204,9 +206,9 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	}
 
 	/**
-	 * TrieSetIterator is a bit tricky as we would have to use the call stack for returning
+	 * TrieSetIterator is a bit tricky as we would have to use the callstack for returning
 	 * to the one calling next(). 
-	 * We remember the position we were on in the tree by a stack and a couple of iterators.
+	 * We therefore remember the position we were on in the tree by a stack and a couple of iterators.
 	 *
 	 * remove is also tricky as the active iterators may give undefined behaviour if we modify a collection 
 	 * by any other means than the very same iterator. We therefore don't implement remove currently.
@@ -230,11 +232,14 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		 * Edge case: when root has payload, don't go searching anymore.
 		 */
 		if (!root.hasPayload()) {
-		    gotoNext();
+		    gotoNextPayload();
 		}
 	    }
-		
-	    private void gotoNext() { 
+	    
+	    /** 
+	     * depth first preorder traversal after payloads.
+	     */
+	    private void gotoNextPayload() { 
 		while(!stack.isEmpty()) {
 		    NodeIteration cur = stack.peek();
 		    while(cur.children.hasNext()) {
@@ -255,7 +260,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    public Map.Entry<K, V> next() {
 		Node cur = stack.peek().node;
 		Map.Entry<K, V> payload = cur.getPayload();
-		gotoNext();
+		gotoNextPayload();
 		return payload;
 	    }
 

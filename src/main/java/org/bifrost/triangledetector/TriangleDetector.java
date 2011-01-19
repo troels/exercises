@@ -16,9 +16,8 @@ public final class TriangleDetector {
      * the sum of two of the sides, are less than or equal to the sum of the third.)
 
      * 
-     * @param a The first side
-     * @param b The second side
-     * @param c The third side
+     * @param a,b,c The sides of the triangle.
+
      * 
      * @return 1 (SCALENE), 2 (ISOSCELES), 3 (EQUILATERAL) or 4 (ERROR)
      * 
