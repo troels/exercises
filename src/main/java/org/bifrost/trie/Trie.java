@@ -320,11 +320,6 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	Node followedTo = findNode(cs);
 	return followedTo != null && followedTo.hasPayload();
     }
-    
-    @Override
-    public boolean containsValue(Object value) { 
-	return containsValue(value, root);
-    }
 
     @Override
     public V get(Object k) {
@@ -348,13 +343,5 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    return null;
 	}
 	return node;
-    }
-
-    private boolean containsValue(Object value, Node n) {
-	if (n.hasPayload() && n.getPayload().getValue().equals(value)) return true; 
-	for (Edge e: n.getChildren()) {
-	    if (containsValue(value, e.getTo())) return true;
-	}
-	return false;
     }
 }
