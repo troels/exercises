@@ -138,7 +138,9 @@ public class SimpleHashSetTest extends TestCase
 	    a.apply();
 	} catch (Exception e) {
 	    assertEquals(e.getClass(), c);
+	    return;
 	}
+	fail("Should have thrown: " + c);
     }
     
     public void testIteratorThrows() { 
