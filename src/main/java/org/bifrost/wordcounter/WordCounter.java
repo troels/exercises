@@ -80,11 +80,7 @@ public class WordCounter {
 	    //String match = m.group().toLowerCase();
 	    String match = DASH_NEWLINE_REGEX.matcher(m.group().toLowerCase()).replaceAll("");
 	    Integer oldval = map.get(match);
-	    if (oldval == null) {
-		map.put(match, 1);
-	    } else {
-		map.put(match, oldval + 1);
-	    }
+	    map.put(match, (oldval == null ? 0 : oldval) + 1);
 	}
 	
 	// Convert words to Word-class and put them in a list.

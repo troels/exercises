@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Collections;
 import org.bifrost.trie.Trie;
@@ -134,17 +135,18 @@ public class TrieTest extends TestCase
     }
 
     public void testEqualityOnIndependenOfInsertionAndDeletionSequence() {
-	ArrayList<Integer> al = new ArrayList<Integer>(1000);
+	HashSet<Integer> hs = new HashSet<Integer>(1000);
 	Random rng = new Random();
 	
 	for(int i = 0; i < 1000; ++i) {
 	    Integer ni = rng.nextInt(100000000);
-	    al.add(ni);
+	    hs.add(ni);
 	}
-
-	final List<Integer> permanentPart = al.subList(0, 300);
-	final List<Integer> deletionPart = al.subList(300, 600);
-	final List<Integer> lastPart = al.subList(600, 1000);
+	
+	ArrayList<Integer> al = new ArrayList<Integer>(hs);
+	final List<Integer> permanentPart = al.subList(0, al.size() / 3);
+	final List<Integer> deletionPart = al.subList(al.size() / 3, 2 * al.size() / 3);
+	final List<Integer> lastPart = al.subList(2 * al.size() / 3, al.size());
 
 	final Trie<String, Integer> trie1 = new Trie<String, Integer>();
 	final Trie<String, Integer> trie2 = new Trie<String, Integer>();
