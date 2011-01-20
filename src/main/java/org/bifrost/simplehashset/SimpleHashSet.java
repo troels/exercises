@@ -5,9 +5,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.AbstractSet;
 
+/**
+ * A simple hashset based on HashMap 
+ */
 public class SimpleHashSet<T> extends AbstractSet<T> {
+    /** 
+     * For every key we add a simple Object()-object (Which I believe to be the smallest Object creatable in java)
+     *,simply to distinguish from null in some of HashMap's api.
+     */
     private final HashMap<T, Object> hashmap;
     
+    /**
+     * Constructor arsenal, based on HashMaps 
+     */
     public SimpleHashSet() {
 	hashmap = new HashMap<T, Object>(16, 0.75f);
     }

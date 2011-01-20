@@ -103,7 +103,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     /**
      * TrieEntry necessary for entrySet()
      */
-    public class TrieEntry implements Map.Entry<K, V> {
+    class TrieEntry implements Map.Entry<K, V> {
 	final K k;
 	V v;
 	
@@ -237,7 +237,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    }
 	    
 	    /** 
-	     * depth first preorder traversal after payloads.
+	     * depth-first traversal looking for payloads.
 	     */
 	    private void gotoNextPayload() { 
 		while(!stack.isEmpty()) {
@@ -269,7 +269,17 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		throw new UnsupportedOperationException();
 	    }
 	}
-		    
+
+	@Override 
+	public boolean contains(Object o) {
+	    Map.Entry<K, V> entry = (Map.Entry<K, V>)o;
+	    Node n = findNode(entry.getKey());
+	    if (n == null || !n.hasPayload()) return false;
+	    V nodeValue = n.getPayload().getValue(), entryValue = entry.getValue();
+	    return (nodeValue == null && entryValue == null) || (nodeValue == entryValue);
+	}
+
+	@Override	
 	public Iterator<Map.Entry<K, V>> iterator() { 
 	    return new TrieSetIterator();
 	}
@@ -281,13 +291,6 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     }
 
 
-    private void getRidOfNode(Node n) {
-	assert n.hasPayload();
-	n.deletePayload();
-	pruneUpwards(n);
-	nrElements--;
-    }
-	
     @Override 
     public V remove(Object key) { 
 	CharSequence cs = (CharSequence) key;
@@ -299,21 +302,6 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	return te.getValue();
     }
 
-    private void pruneUpwards(Node n) { 
-	while (n.getChildren().isEmpty() && !n.hasPayload() && n.hasParent()) {
-	    Node parent = n.getParent();
-	    int i = 0;
-	    Collection<Edge> children = parent.getChildren();
-	    for(Edge e: children) {
-		if (e.getTo() == n) break;
-		++i;
-	    }
-	    assert i < children.size();
-	    children.remove(i);
-	    n = parent;
-	}
-    }
-    
     @Override
     public boolean containsKey(Object key) { 
 	CharSequence cs = (CharSequence) key;
@@ -330,7 +318,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	return n != null && n.hasPayload() ? n.getPayload().getValue() : null;
     }
 
-    private Node findNode(CharSequence s) { 
+    Node findNode(CharSequence s) { 
 	Node node = root;
 	outer: for (int i = 0; i < s.length(); ++i) {
 	    char c = s.charAt(i);
@@ -343,5 +331,27 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    return null;
 	}
 	return node;
+    }
+
+    void getRidOfNode(Node n) {
+	assert n.hasPayload();
+	n.deletePayload();
+	pruneUpwards(n);
+	nrElements--;
+    }
+	
+    void pruneUpwards(Node n) { 
+	while (n.getChildren().isEmpty() && !n.hasPayload() && n.hasParent()) {
+	    Node parent = n.getParent();
+	    int i = 0;
+	    Collection<Edge> children = parent.getChildren();
+	    for(Edge e: children) {
+		if (e.getTo() == n) break;
+		++i;
+	    }
+	    assert i < children.size();
+	    children.remove(i);
+	    n = parent;
+	}
     }
 }
