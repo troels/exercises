@@ -276,7 +276,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    Node n = findNode(entry.getKey());
 	    if (n == null || !n.hasPayload()) return false;
 	    V nodeValue = n.getPayload().getValue(), entryValue = entry.getValue();
-	    return (nodeValue == null && entryValue == null) || (nodeValue == entryValue);
+	    return (nodeValue == null ? entryValue == null : nodeValue.equals(entryValue));
 	}
 
 	@Override	
