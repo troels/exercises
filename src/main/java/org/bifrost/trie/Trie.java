@@ -120,7 +120,8 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	public boolean equals(Object o) {
 	    if (!(o instanceof Map.Entry)) return false;
 	    Map.Entry<K, V> entry = (Map.Entry<K, V>)o;
-	    return entry.getKey().equals(getKey()) && entry.getValue().equals(getValue());
+	    return (getKey() == null ? entry.getKey() == null : getKey().equals(entry.getKey())) && 
+		   (getValue() == null ? entry.getValue() == null : getValue().equals(entry.getValue()));
 	}
 
 	@Override
@@ -275,8 +276,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    Map.Entry<K, V> entry = (Map.Entry<K, V>)o;
 	    Node n = findNode(entry.getKey());
 	    if (n == null || !n.hasPayload()) return false;
-	    V nodeValue = n.getPayload().getValue(), entryValue = entry.getValue();
-	    return (nodeValue == null ? entryValue == null : nodeValue.equals(entryValue));
+	    return entry.equals(n.getPayload());
 	}
 
 	@Override	
@@ -312,7 +312,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
     @Override
     public V get(Object k) {
 	CharSequence cs = (CharSequence)k;
-	
+
 	Node n = findNode(cs);
 
 	return n != null && n.hasPayload() ? n.getPayload().getValue() : null;

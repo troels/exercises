@@ -35,7 +35,45 @@ public class TrieTest extends TestCase
 	assertEquals("Fine by me", trie.put("Hello its me", "Not so fine"));
 	assertEquals("Not so fine", trie.get("Hello its me"));
     }
-    
+
+    class FakeTrieSet<K, V> implements Map.Entry<K, V> { 
+	final K k;
+	final V v;
+	
+	public FakeTrieSet(K k, V v) {
+	    this.k = k; this.v = v;
+	}
+	
+	@Override
+	public K getKey() { 
+	    return k;
+	}
+
+	@Override 
+	public V getValue() { 
+	    return v;
+	}
+	
+	@Override 
+	public V setValue(V v) { 
+	    throw new UnsupportedOperationException();
+	}
+    }
+
+    public void testNull() { 
+	Trie<String, String> trie = new Trie<String, String>();
+	assert(!trie.containsValue(null));
+	trie.put("", null);
+	assert(trie.containsKey(""));
+	assertEquals(null, trie.get(""));
+	assert(trie.containsValue(null));
+	Map.Entry<String, String> entry = trie.entrySet().iterator().next();
+	assertEquals(null, entry.getValue());
+	assert(trie.entrySet().contains(entry));
+	assert(!trie.entrySet().contains(new FakeTrieSet("", "hi there")));
+	assertEquals(null, trie.remove(""));
+    }
+
     /**
      * Test addition and removing. Including removing the same key twice. 
      */
@@ -239,6 +277,7 @@ public class TrieTest extends TestCase
 	entry.setValue("Something different");
 	assert(!s1.equals(s2));
 	assert(!trie1.equals(trie2));
+	assert(!s1.containsAll(s2));
 	entry.setValue(oldValue);
 	assert(s1.equals(s2));
 	assert(trie1.equals(trie2));
