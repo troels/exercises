@@ -77,7 +77,6 @@ public class WordCounter {
 
 	// Find all words and put them in hashmap
 	while(m.find()) {
-	    //String match = m.group().toLowerCase();
 	    String match = DASH_NEWLINE_REGEX.matcher(m.group().toLowerCase()).replaceAll("");
 	    Integer oldval = map.get(match);
 	    map.put(match, (oldval == null ? 0 : oldval) + 1);

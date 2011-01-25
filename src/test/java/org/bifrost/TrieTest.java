@@ -278,6 +278,7 @@ public class TrieTest extends TestCase
 	assert(!s1.equals(s2));
 	assert(!trie1.equals(trie2));
 	assert(!s1.containsAll(s2));
+
 	entry.setValue(oldValue);
 	assert(s1.equals(s2));
 	assert(trie1.equals(trie2));

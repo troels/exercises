@@ -69,10 +69,8 @@ public class TriangleDetectorTest extends TestCase
 	    for (Collection<Integer> coll: PermutationGenerator.permute(lst)) {
 		Iterator<Integer> iter = coll.iterator();
 		int a_ = iter.next(); int b_ = iter.next(); int c_ = iter.next();
-		assertEquals(
-			     String.format("TriangleDetector.detectTriangle(%d, %d, %d) should return %d",
+		assertEquals(String.format("TriangleDetector.detectTriangle(%d, %d, %d) should return %d",
 					   a_, b_, c_, result),
-			     
 			     result, TriangleDetector.detectTriangle(a_, b_, c_));
 	    }
     }

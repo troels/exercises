@@ -14,7 +14,7 @@ import java.util.Stack;
  * A trie or a prefix tree is a map-datastructure that is very well-suited for mapping
  * long, similar strings written in a small alphabet to values of any kind.
  * 
- * It's worst-case characteristics is in many respects better than
+ * Its worst-case characteristics is in many respects better than
  * hash tables and binary trees.  Average performance compared to
  * binary trees and hash tables in common scenarios, are not too
  * exciting though.
@@ -35,7 +35,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
      * too.  Though we have no guarantee that someone has not put an
      * illegal surrogate pair in the tree.
      */
-    class Edge { 
+    static class Edge { 
 	final char label;
 	final Node to;
 
@@ -52,7 +52,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
      * A node has zero or more children, a parent (only used for speeding up deletion somewhat)
      * and occasionally some value (the payload)
      */ 
-    class Node {
+    static class Node {
 	final Node parent;
 	final LinkedList<Edge> children; 
 	boolean hasPayload;
@@ -112,10 +112,6 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	    this.v = v;
 	}
 
-	/*
-	 * Because of erasure this method is shaky, as we don't have any guarantees what kind of 
-	 * Map.Entry o is.  It may throw exceptions or it may not think itself equals to us (dropping symmetry)
-	 */
 	@Override
 	public boolean equals(Object o) {
 	    if (!(o instanceof Map.Entry)) return false;
@@ -225,7 +221,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 		}
 	    }
 		
-	    private Stack<NodeIteration> stack;
+	    Stack<NodeIteration> stack;
 	    {
 		stack = new Stack<NodeIteration>();
 		stack.push(new NodeIteration(root));
