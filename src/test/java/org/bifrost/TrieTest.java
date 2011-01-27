@@ -282,7 +282,5 @@ public class TrieTest extends TestCase
 	entry.setValue(oldValue);
 	assert(s1.equals(s2));
 	assert(trie1.equals(trie2));
-	
     }
-	    
 }

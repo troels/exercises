@@ -35,7 +35,7 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
      * too.  Though we have no guarantee that someone has not put an
      * illegal surrogate pair in the tree.
      */
-    static class Edge { 
+    class Edge { 
 	final char label;
 	final Node to;
 
@@ -52,11 +52,11 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
      * A node has zero or more children, a parent (only used for speeding up deletion somewhat)
      * and occasionally some value (the payload)
      */ 
-    static class Node {
+    class Node {
 	final Node parent;
 	final LinkedList<Edge> children; 
 	boolean hasPayload;
-	TrieEntry payload; 
+	TrieEntry payload;
 	
 	public Node(Node parent, TrieEntry payload) {
 	    this(parent);
@@ -137,14 +137,13 @@ public class Trie<K extends CharSequence, V> extends AbstractMap<K, V> {
 	
 	
 	/**
-	 * We have a gurantee that the mapping still exists in the map, so this is basically just a payload exchange.
+	 * We have a guarantee that the mapping still exists in the map, so this is basically just a payload exchange.
 	 * if the mapping does not exist we are undefined (but will generally pull out allright anyway).
 	 */
 	@Override 
 	public V setValue(V v) {
-	    V ret =  Trie.this.put(k, v);
 	    this.v = v;
-	    return ret;
+	    return this.getValue();
 	}
     }
 
